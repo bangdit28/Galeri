@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galeri Foto Interaktif - Navigasi Lanjutan</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #f4f6f8;
+            --card-bg-color: #ffffff;
+            --text-color-primary: #333333;
+            --text-color-secondary: #555555;
+            --border-color: #e0e0e0;
+            --accordion-active-bg: #e7f3ff;
+            --accordion-content-bg: #f7f9fc;
+            --modal-overlay-bg: rgba(0, 0, 0, 0.9);
+            --modal-close-btn-color: #f1f1f1;
+            --toggle-bg-off: #ccc;
+            --toggle-bg-on: #28a745;
+            --toggle-knob-color: white;
+            --button-primary-bg: #007bff;
+            --button-primary-text: #ffffff;
+            --button-primary-hover-bg: #0056b3;
+            --nav-link-color: #007bff;
+            --nav-link-hover-color: #0056b3;
+            --nav-link-title-color: var(--text-color-secondary);
+            --nav-link-separator-color: var(--border-color);
+            --new-album-badge-bg: red;
+            --new-album-badge-text: white;
+        }
+
+        body.dark-mode {
+            --bg-color: #1a1a1a;
+            --card-bg-color: #2c2c2c;
+            --text-color-primary: #e0e0e0;
+            --text-color-secondary: #b0b0b0;
+            --border-color: #444444;
+            --accordion-active-bg: #003366;
+            --accordion-content-bg: #222222;
+            --modal-overlay-bg: rgba(0, 0, 0, 0.95);
+            --modal-close-btn-color: #dddddd;
+            --toggle-bg-off: #555;
+            --toggle-bg-on: #34c759;
+            --button-primary-bg: #0056b3;
+            --button-primary-text: #e0e0e0;
+            --button-primary-hover-bg: #004494;
+            --nav-link-color: #34aadc;
+            --nav-link-hover-color: #68c7ec;
+            --new-album-badge-bg: #ff3b30;
+            --new-album-badge-text: white;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color-primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .theme-switch-wrapper { display: flex; align-items: center; }
+        .theme-switch { display: inline-block; height: 24px; position: relative; width: 48px; }
+        .theme-switch input { display: none; }
+        .slider { background-color: var(--toggle-bg-off); bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 24px; }
+        .slider:before { background-color: var(--toggle-knob-color); bottom: 3px; content: ""; height: 18px; left: 3px; position: absolute; width: 18px; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--toggle-bg-on); }
+        input:checked + .slider:before { transform: translateX(24px); }
+        .theme-switch-label { margin-left: 10px; font-size: 0.9em; color: var(--text-color-secondary); white-space: nowrap; }
+
+        .terms-container {
+            background-color: var(--card-bg-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .terms-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; }
+        .terms-header h2 { font-size: 1.3em; color: var(--text-color-primary); margin: 0; display: flex; align-items: center; transition: color 0.3s; flex-shrink: 0; }
+        .header-flag-emoji { font-size: 1.5em; margin-right: 10px; vertical-align: middle; }
+
+        .accordion-item { background-color: var(--card-bg-color); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; overflow: hidden; transition: background-color 0.3s, border-color 0.3s; }
+        .accordion-item.hidden-album { display: none; }
+        
+        .accordion-button { 
+            background-color: var(--card-bg-color); 
+            color: var(--text-color-primary); 
+            cursor: pointer; 
+            padding: 15px 20px; 
+            width: 100%; 
+            border: none; 
+            text-align: left; 
+            outline: none; 
+            font-size: 1em; 
+            font-weight: 600; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            transition: background-color 0.3s, color 0.3s; 
+        }
+        .accordion-button-text-wrapper { 
+            flex-grow: 1; 
+            margin-right: 10px; 
+            line-height: 1.4; 
+        }
+        .accordion-button .arrow-icon { 
+            transition: transform 0.3s ease; 
+            color: var(--text-color-secondary); 
+            flex-shrink: 0; 
+        }
+        .accordion-button.active { background-color: var(--accordion-active-bg); }
+        .accordion-button.active .arrow-icon { transform: rotate(90deg); }
+
+        .new-album-badge {
+            background-color: var(--new-album-badge-bg);
+            color: var(--new-album-badge-text);
+            padding: 2px 6px;
+            font-size: 0.65em; 
+            font-weight: bold;
+            border-radius: 4px;
+            margin-left: 6px; 
+            animation: blink-animation-album 1.5s infinite;
+            text-transform: uppercase;
+            display: inline-block; 
+            vertical-align: middle; 
+            line-height: 1; 
+        }
+
+        @keyframes blink-animation-album { 
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .accordion-content { padding: 0 20px; background-color: var(--accordion-content-bg); color: var(--text-color-secondary); max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s ease-out, background-color 0.3s, color 0.3s; }
+        .accordion-content.show { padding: 20px; }
+
+        .image-gallery { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+        .image-gallery img { 
+            width: 100px; 
+            height: 150px; 
+            object-fit: cover; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+            transition: transform 0.2s ease; 
+            cursor: pointer; 
+        }
+        .image-gallery img:hover { transform: scale(1.05); }
+
+        .load-more-button-container { text-align: center; margin-top: 20px; }
+        #loadMoreAlbumsBtn { background-color: var(--button-primary-bg); color: var(--button-primary-text); border: none; padding: 10px 20px; border-radius: 6px; font-size: 0.95em; font-weight: 600; cursor: pointer; transition: background-color 0.3s, color 0.3s; }
+        #loadMoreAlbumsBtn:hover { background-color: var(--button-primary-hover-bg); }
+
+        .navigation-links-container {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--nav-link-separator-color);
+            text-align: center;
+        }
+        .navigation-links-container h4 {
+            font-size: 0.95em;
+            color: var(--nav-link-title-color);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .navigation-links-container a {
+            color: var(--nav-link-color);
+            text-decoration: none;
+            margin: 5px 8px;
+            padding: 5px 0;
+            display: inline-block;
+            transition: color 0.3s;
+            cursor: pointer; 
+        }
+        .navigation-links-container a:hover {
+            color: var(--nav-link-hover-color);
+            text-decoration: underline;
+        }
+
+        .image-modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: var(--modal-overlay-bg); justify-content: center; align-items: center; transition: background-color 0.3s; }
+        .image-modal.show { display: flex; }
+        .modal-content-image { margin: auto; display: block; max-width: 90%; max-height: 90vh; animation-name: zoomInModal; animation-duration: 0.4s; }
+        @keyframes zoomInModal { from {transform: scale(0.5); opacity: 0;} to {transform: scale(1); opacity: 1;} }
+        .close-modal-button { position: absolute; top: 20px; right: 35px; color: var(--modal-close-btn-color); font-size: 40px; font-weight: bold; transition: 0.3s; cursor: pointer; z-index: 1002; }
+        .close-modal-button:hover, .close-modal-button:focus { color: #bbb; text-decoration: none; }
+
+        .coming-soon-popup {
+            display: none; 
+            position: fixed;
+            z-index: 1005; 
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: var(--modal-overlay-bg); 
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s;
+        }
+        .coming-soon-popup.show {
+            display: flex; 
+        }
+        .coming-soon-popup-content {
+            background-color: var(--card-bg-color); 
+            color: var(--text-color-primary); 
+            margin: auto;
+            padding: 25px 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            text-align: center;
+            position: relative;
+            max-width: 380px;
+            width: 85%;
+            animation: zoomInModal 0.3s; 
+        }
+        .coming-soon-popup-content h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            color: var(--text-color-primary);
+        }
+        .coming-soon-popup-content p {
+            margin-bottom: 25px;
+            font-size: 1em;
+            color: var(--text-color-secondary);
+            line-height: 1.6;
+        }
+        .close-coming-soon-popup-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: var(--text-color-secondary); 
+            font-size: 28px;
+            font-weight: bold;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .close-coming-soon-popup-btn:hover,
+        .close-coming-soon-popup-btn:focus {
+            color: var(--text-color-primary);
+            text-decoration: none;
+        }
+        .coming-soon-popup-button { 
+            background-color: var(--button-primary-bg);
+            color: var(--button-primary-text);
+            border: none;
+            padding: 10px 25px;
+            border-radius: 6px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .coming-soon-popup-button:hover {
+            background-color: var(--button-primary-hover-bg);
+        }
+    </style>
+</head>
+<body>
+    <div class="terms-container">
+        <div class="terms-header">
+            <h2>
+                <span class="header-flag-emoji">🇮🇩</span>
+                Galeri Foto
+            </h2>
+            <div class="theme-switch-wrapper">
+                <label class="theme-switch" for="theme-checkbox">
+                    <input type="checkbox" id="theme-checkbox" />
+                    <div class="slider"></div>
+                </label>
+                <span class="theme-switch-label">Mode</span>
+            </div>
+        </div>
+      
+        <div class="accordion-item">
+            <button class="accordion-button">
+                <span class="accordion-button-text-wrapper">
+                    abg cantik vivi <span class="new-album-badge">NEW</span>
+                </span>
+                <span class="arrow-icon"><i class="fas fa-chevron-right"></i></span>
+            </button>
+            <div class="accordion-content">
+                <div class="image-gallery">
+                    <img src="https://cdn-images.imagevenue.com/0a/99/df/ME1AT2N9_o.jpeg" alt="Wanita 1 - Foto 1">
+                    <img src="https://cdn-images.imagevenue.com/d3/5c/6d/ME1ATVV6_o.jpeg" alt="Wanita 1 - Foto 2">
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <button class="accordion-button">
+                <span class="accordion-button-text-wrapper">
+                    Pap Hijab Sarah <span class="new-album-badge">NEW</span>
+                </span>
+                <span class="arrow-icon"><i class="fas fa-chevron-right"></i></span>
+            </button>
+            <div class="accordion-content">
+                <div class="image-gallery">
+                    <img src="https://cdn-images.imagevenue.com/94/76/dc/ME1AT5E8_o.jpeg" alt="Wanita 2 - Foto 1">
+                    <img src="https://cdn-images.imagevenue.com/1d/cd/13/ME1AT5E9_o.jpeg" alt="Wanita 2 - Foto 2">
+                    <img src="https://cdn-images.imagevenue.com/f0/5d/da/ME1AT5EA_o.jpeg" alt="Wanita 2 - Foto 2">
+                    <img src="https://cdn-images.imagevenue.com/dd/42/ec/ME1AT5EB_o.jpeg" alt="Wanita 2 - Foto 2">
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <button class="accordion-button">
+                <span class="accordion-button-text-wrapper">
+                    Debi Rahayu bugil <span class="new-album-badge">NEW</span>
+                </span>
+                <span class="arrow-icon"><i class="fas fa-chevron-right"></i></span>
+            </button>
+            <div class="accordion-content">
+                <div class="image-gallery">
+                    <img src="https://cdn-images.imagevenue.com/f8/cd/0c/ME1AT5F9_o.jpeg" alt="Wanita 3 - Foto 1">
+                    <img src="https://cdn-images.imagevenue.com/77/e6/b0/ME1AT5FA_o.jpeg" alt="Wanita 3 - Foto 2">
+                    <img src="https://cdn-images.imagevenue.com/b9/07/11/ME1AT5FB_o.jpeg" alt="Wanita 3 - Foto 2">
+                    <img src="https://cdn-images.imagevenue.com/33/d3/90/ME1AT5FC_o.jpeg" alt="Wanita 3 - Foto 2">
+                    <img src="https://cdn-images.imagevenue.com/2b/3c/7a/ME1AT5FE_o.jpeg" alt="Wanita 3 - Foto 2">
+                    <img src="https://cdn-images.imagevenue.com/a2/b2/ea/ME1AT5FF_o.jpeg" alt="Wanita 3 - Foto 2">
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+           <button class="accordion-button">
+               <span class="accordion-button-text-wrapper">
+                   hijab cantik kacamata <span class="new-album-badge">NEW</span>
+               </span>
+               <span class="arrow-icon"><i class="fas fa-chevron-right"></i></span>
+           </button>
+           <div class="accordion-content">
+               <div class="image-gallery">
+                   <img src="https://cdn-images.imagevenue.com/5b/77/39/ME1AT5FJ_o.jpeg" alt="Wanita 3 - Foto 1">
+                   <img src="https://cdn-images.imagevenue.com/d6/be/6c/ME1AT5FK_o.jpeg" alt="Wanita 3 - Foto 2">
+                   <img src="https://cdn-images.imagevenue.com/a1/81/40/ME1AT5FL_o.jpeg" alt="Wanita 3 - Foto 1">
+                   <img src="https://cdn-images.imagevenue.com/07/1c/f7/ME1AT5FM_o.jpeg" alt="Wanita 3 - Foto 2">
+                   <img src="https://cdn-images.imagevenue.com/10/d8/c5/ME1AT5FN_o.jpeg" alt="Wanita 3 - Foto 1">
+                   <img src="https://cdn-images.imagevenue.com/3a/70/ab/ME1AT5FP_o.jpeg" alt="Wanita 3 - Foto 2">
+                   <img src="https://cdn-images.imagevenue.com/b4/5c/2b/ME1AT5FQ_o.jpeg" alt="Wanita 3 - Foto 1">
+                   <img src="https://cdn-images.imagevenue.com/ef/b2/82/ME1AT5FR_o.jpeg" alt="Wanita 3 - Foto 2">
+               </div>
+           </div>
+       </div>
+ 
+       <div class="accordion-item hidden-album">
+            <button class="accordion-button">
+                <span class="accordion-button-text-wrapper">
+                    <span class="new-album-badge">COMING SOON</span>
+                </span>
+                <span class="arrow-icon"><i class="fas fa-chevron-right"></i></span>
+            </button>
+            <div class="accordion-content">
+                <div class="image-gallery">
+                    <img src="-" alt="-">
+                    <img src="-" alt="-">
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item hidden-album">
+            <button class="accordion-button">
+                <span class="accordion-button-text-wrapper">
+                    <span class="new-album-badge">COMING SOON</span>
+                </span>
+                <span class="arrow-icon"><i class="fas fa-chevron-right"></i></span>
+            </button>
+            <div class="accordion-content">
+                <div class="image-gallery">
+                    <img src="-" alt="-">
+                </div>
+            </div>
+        </div>
+
+        <div class="load-more-button-container">
+            <button id="loadMoreAlbumsBtn">Lihat Selengkapnya</button>
+        </div>
+
+        <div class="navigation-links-container">
+            <h4>Jelajahi Galeri Lainnya:</h4>
+            <a href="#coming-soon">Wanita India</a>
+            <a href="#coming-soon">Wanita Amerika</a>
+            <a href="#coming-soon">Wanita Korea</a>
+            <a href="#coming-soon">Wanita Jepang</a>
+            <a href="#coming-soon">Wanita Eropa</a>
+        </div>
+
+    </div> 
+
+    <div id="myImageModal" class="image-modal">
+        <span class="close-modal-button">×</span>
+        <img class="modal-content-image" id="modalImgElement">
+    </div>
+
+    <div id="comingSoonPopup" class="coming-soon-popup">
+        <div class="coming-soon-popup-content">
+            <span class="close-coming-soon-popup-btn" id="closeComingSoonPopupBtn">×</span>
+            <h3>Segera Hadir!</h3>
+            <p>Galeri untuk kategori ini sedang dalam tahap pengembangan. Silakan kembali lagi nanti.</p>
+            <button class="coming-soon-popup-button" id="okComingSoonPopupBtn">OK</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Accordion Logic
+            const accordionButtons = document.querySelectorAll('.accordion-button');
+            accordionButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const content = this.nextElementSibling;
+                    const isActive = this.classList.contains('active');
+                    document.querySelectorAll('.accordion-button.active').forEach(activeBtn => {
+                        if (activeBtn !== this) {
+                            activeBtn.classList.remove('active');
+                            activeBtn.nextElementSibling.style.maxHeight = null;
+                            activeBtn.nextElementSibling.classList.remove('show');
+                        }
+                    });
+                    if (isActive) {
+                        this.classList.remove('active');
+                        content.style.maxHeight = null;
+                        content.classList.remove('show');
+                    } else {
+                        this.classList.add('active');
+                        content.classList.add('show');
+                        content.style.maxHeight = content.scrollHeight + "px";
+                    }
+                });
+            });
+
+            // Modal Image Logic
+            const imageModal = document.getElementById("myImageModal");
+            const modalImg = document.getElementById("modalImgElement");
+            function setupGalleryImageListeners() {
+                const galleryImages = document.querySelectorAll(".image-gallery img"); 
+                galleryImages.forEach(img => {
+                    img.removeEventListener('click', openImageModalHandler); 
+                    img.addEventListener('click', openImageModalHandler);
+                });
+            }
+            function openImageModalHandler() { 
+                imageModal.classList.add('show');
+                modalImg.src = this.src;
+                modalImg.alt = this.alt;
+                document.body.style.overflow = 'hidden';
+            }
+            setupGalleryImageListeners(); 
+            const closeImageModalBtn = document.querySelector(".close-modal-button");
+            function closeImageModalFunction() {
+                imageModal.classList.remove('show');
+                modalImg.src = ""; 
+                document.body.style.overflow = 'auto';
+            }
+            if (closeImageModalBtn) { closeImageModalBtn.addEventListener('click', closeImageModalFunction); }
+            imageModal.addEventListener('click', function(event) { if (event.target === imageModal) closeImageModalFunction(); });
+            
+            // Theme Toggle Logic
+            const themeToggle = document.getElementById('theme-checkbox');
+            const themeLabel = document.querySelector('.theme-switch-label');
+            const currentTheme = localStorage.getItem('theme');
+            function updateThemeLabel(isDarkMode) { themeLabel.textContent = isDarkMode ? 'Siang' : 'Malam'; }
+            if (currentTheme) {
+                document.body.classList.add(currentTheme);
+                if (currentTheme === 'dark-mode') { themeToggle.checked = true; }
+            }
+            updateThemeLabel(themeToggle.checked); 
+            themeToggle.addEventListener('change', function() {
+                if (this.checked) { document.body.classList.add('dark-mode'); localStorage.setItem('theme', 'dark-mode'); }
+                else { document.body.classList.remove('dark-mode'); localStorage.setItem('theme', 'light-mode'); }
+                updateThemeLabel(this.checked);
+            });
+
+            // Load More Albums Logic
+            const loadMoreBtn = document.getElementById('loadMoreAlbumsBtn');
+            const hiddenAlbums = document.querySelectorAll('.accordion-item.hidden-album');
+            const loadMoreContainer = document.querySelector('.load-more-button-container');
+            if (hiddenAlbums.length === 0) {
+                if(loadMoreContainer) loadMoreContainer.style.display = 'none';
+            } else {
+                 if(loadMoreBtn) {
+                    loadMoreBtn.addEventListener('click', function() {
+                        hiddenAlbums.forEach(album => {
+                            album.style.display = 'block'; 
+                        });
+                        if(loadMoreContainer) loadMoreContainer.style.display = 'none';
+                        setupGalleryImageListeners(); 
+                    });
+                }
+            }
+
+            // Coming Soon Popup Logic
+            const comingSoonPopup = document.getElementById('comingSoonPopup');
+            const closeComingSoonBtn = document.getElementById('closeComingSoonPopupBtn');
+            const okComingSoonBtn = document.getElementById('okComingSoonPopupBtn');
+            const navLinksForPopup = document.querySelectorAll('.navigation-links-container a');
+
+            function openComingSoonModal() {
+                comingSoonPopup.classList.add('show');
+                document.body.style.overflow = 'hidden'; 
+            }
+
+            function closeComingSoonModal() {
+                comingSoonPopup.classList.remove('show');
+                document.body.style.overflow = 'auto'; 
+            }
+
+            navLinksForPopup.forEach(link => {
+                link.addEventListener('click', function(event) {
+                    event.preventDefault(); 
+                    openComingSoonModal();
+                });
+            });
+
+            if (closeComingSoonBtn) {
+                closeComingSoonBtn.addEventListener('click', closeComingSoonModal);
+            }
+            if (okComingSoonBtn) {
+                okComingSoonBtn.addEventListener('click', closeComingSoonModal);
+            }
+
+            comingSoonPopup.addEventListener('click', function(event) {
+                if (event.target === comingSoonPopup) {
+                    closeComingSoonModal();
+                }
+            });
+
+            document.addEventListener('keydown', function(event) {
+                if (event.key === "Escape") {
+                    if (imageModal.classList.contains('show')) {
+                        closeImageModalFunction();
+                    }
+                    if (comingSoonPopup.classList.contains('show')) {
+                        closeComingSoonModal();
+                    }
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
